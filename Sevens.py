@@ -1,4 +1,5 @@
 import random
+import time
 
 face_value = {
     'A': 1,
@@ -13,6 +14,23 @@ colour_value = {
     'D': 1,
     'C': 0
 }
+def update_table(card_at_hand):
+    if card_at_hand[1] == 7:
+        table[card_at_hand[0]] = [7]
+    elif card_at_hand[1] < table[card_at_hand[0]][0]:
+        table[card_at_hand[0]] = [card_at_hand[1]] + table[card_at_hand[0]]
+    else:
+        table[card_at_hand[0]] += [card_at_hand[1]]
+    print(table)
+
+def update_available_move(card_at_hand):
+    if card_at_hand[1] == 7:
+        available_move[card_at_hand[0]] = [6,8]
+    elif card_at_hand[1] < 7:
+        available_move[card_at_hand[0]][0] -= 1
+    else:
+        available_move[card_at_hand[0]][1] += 1
+    print(available_move)
 
 
 class Card:
@@ -46,17 +64,26 @@ class Player:
     def __init__(self, deck) -> None:
         self.deck = deck
 
-    def search_available_card(self, available_num):
-        for suit in available_num:
-            for num in suit:
-                if any(suit+str(num) == str(card) for card in self.deck):
-                    self.play_card(suit+str(num))
-
     def play_card(self, targat_card):
         for card in self.deck:
             if targat_card == str(card):
-                deck.remove(card)
-                break
+                self.deck.remove(card)
+                return
+    
+    def search_in_deck(self, available_move):
+        for suit,nums in available_move.items():
+            for num in nums:
+                for card in self.deck:
+                    if card.colour == suit and card.value == num:
+                        return (suit,num)
+    
+    def take_turn(self):
+        card_at_hand = self.search_in_deck(available_move)
+        player2.play_card(f'{card_at_hand[0]}/{card_at_hand[1]}')
+        update_table(card_at_hand)
+        update_available_move(card_at_hand)
+        print()
+
 
 num = 'A23456789TJQK'
 colour = 'SHDC'
@@ -77,14 +104,18 @@ else:
     player1 = Player(deck2)
     player2 = Player(deck1)
 
-
 player1.play_card('S/7')
 table = {'S': [7], 'H': [], 'D': [], 'C': []}
-available_num = {'S': [6,8], 'H': [7], 'D': [7], 'C': [7]}
+available_move = {'S': [6,8], 'H': [7], 'D': [7], 'C': [7]}
 
-player2.search_available_card(table)
+player2.take_turn()
 
 
-
-# while player2:
-#     play_card(player1)
+while player2:
+    player1.take_turn()
+    player2.take_turn()
+    # ip = input('next round?')
+    # if ip == '':
+    #     continue
+    # elif ip == 'q':
+    #     break
